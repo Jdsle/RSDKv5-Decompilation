@@ -487,7 +487,11 @@ void RSDK::DevMenu_MainMenu()
 
             case 2:
 #if RETRO_REV0U && RETRO_USE_MOD_LOADER
-                if (engine.version == 5) {
+                if (engine.version == 5
+#if DO_AWESOME_THINGS
+                    && !modSettings.playerCount
+#endif
+                ) {
                     devMenu.state     = DevMenu_CategorySelectMenu;
                     devMenu.selection = 0;
                     devMenu.timer     = 1;
@@ -668,7 +672,11 @@ void RSDK::DevMenu_CategorySelectMenu()
 #if !RETRO_USE_ORIGINAL_CODE
     else if (swap ? controller[CONT_ANY].keyA.press : controller[CONT_ANY].keyB.press) {
 #if RETRO_REV0U && RETRO_USE_MOD_LOADER
-        if (engine.version == 5) {
+        if (engine.version == 5
+#if DO_AWESOME_THINGS
+            && !modSettings.playerCount
+#endif
+        ) {
             devMenu.state     = DevMenu_MainMenu;
             devMenu.listPos   = 0;
             devMenu.scrollPos = 0;

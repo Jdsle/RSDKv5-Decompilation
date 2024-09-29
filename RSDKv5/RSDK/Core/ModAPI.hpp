@@ -143,6 +143,11 @@ enum ModFunctionTableIDs {
     ModTable_GetCollisionInfo,
 #endif
 
+#if DO_AWESOME_THINGS
+    ModTable_AddDevMenuCharacter,
+    ModTable_GetActiveDevMenuCharacter,
+#endif
+
     ModTable_Count
 };
 
@@ -217,8 +222,14 @@ struct ModSettings {
     int32 versionOverride = 0;
     bool32 forceScripts   = false;
 
+    // Player names and player count can be moved out of this REV0U check
+    // LEGACY_PLAYERNAME_COUNT can also be renamed?
     char playerNames[LEGACY_PLAYERNAME_COUNT][0x20];
     int32 playerCount = 0;
+#endif
+
+#if DO_AWESOME_THINGS
+    int32 characterIDs[0x20];
 #endif
 };
 
@@ -422,6 +433,17 @@ inline void *GetChannel(uint8 id)
 
 // Objects/Entities
 bool32 GetGroupEntities(uint16 group, void **entity);
+#endif
+
+#if DO_AWESOME_THINGS
+inline void AddDevMenuCharacter(const char *name, int32 characterID)
+{
+    modSettings.characterIDs[modSettings.playerCount] = characterID;
+    StrCopy(modSettings.playerNames[modSettings.playerCount], name);
+
+    ++modSettings.playerCount;
+}
+inline int32 GetActiveDevMenuCharacter() { return modSettings.characterIDs[devMenu.playerListPos]; }
 #endif
 
 #endif

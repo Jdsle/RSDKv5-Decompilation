@@ -197,6 +197,11 @@ void RSDK::InitModAPI(bool32 getVersion)
     ADD_MOD_FUNCTION(ModTable_GetCollisionInfo, GetCollisionInfo);
 #endif
 
+#if DO_AWESOME_THINGS
+    ADD_MOD_FUNCTION(ModTable_AddDevMenuCharacter, AddDevMenuCharacter);
+    ADD_MOD_FUNCTION(ModTable_GetActiveDevMenuCharacter, GetActiveDevMenuCharacter);
+#endif
+
     superLevels.clear();
     inheritLevel = 0;
     LoadMods(false, getVersion);
@@ -1620,7 +1625,7 @@ void SuperInternal(RSDK::ObjectClass *super, RSDK::ModSuper callback, void *data
 #if RETRO_REV0U && DO_AWESOME_THINGS
         case SUPER_STATICLOAD:
             if (super->staticLoad)
-                super->staticLoad((Object*)data);
+                super->staticLoad((Object *)data);
             else
                 LoadStaticVariables((uint8 *)*super->staticVars, super->hash, sizeof(Object));
             break;
@@ -1795,7 +1800,7 @@ void RSDK::ModRegisterObject_STD(Object **staticVars, Object **modStaticVars, co
         if (!draw)         info->draw         = [curMod, info]()                    { currentMod = curMod; SuperInternal(info, SUPER_DRAW, NULL);              currentMod = NULL; };
         if (!create)       info->create       = [curMod, info](void* data)          { currentMod = curMod; SuperInternal(info, SUPER_CREATE, data);            currentMod = NULL; };
         if (!stageLoad)    info->stageLoad    = [curMod, info]()                    { currentMod = curMod; SuperInternal(info, SUPER_STAGELOAD, NULL);         currentMod = NULL; };
-#if RETRO_REV0U
+#if RETRO_REV0U && DO_AWESOME_THINGS
         if (!staticLoad)   info->staticLoad   = [curMod, info](Object *staticVars)  { currentMod = curMod; SuperInternal(info, SUPER_STATICLOAD, staticVars);  currentMod = NULL; };
 #endif
         if (!editorLoad)   info->editorLoad   = [curMod, info]()                    { currentMod = curMod; SuperInternal(info, SUPER_EDITORLOAD, NULL);        currentMod = NULL; };
