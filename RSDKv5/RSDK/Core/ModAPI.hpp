@@ -44,6 +44,9 @@ enum ModSuper {
     SUPER_DRAW,
     SUPER_CREATE,
     SUPER_STAGELOAD,
+#if RETRO_REV0U && DO_AWESOME_THINGS
+    SUPER_STATICLOAD,
+#endif
     SUPER_EDITORLOAD,
     SUPER_EDITORDRAW,
     SUPER_SERIALIZE
@@ -238,7 +241,7 @@ inline void SetActiveMod(int32 id) { modSettings.activeMod = id; }
 void InitModAPI(bool32 getVersion = false);
 void UnloadMods();
 void LoadMods(bool newOnly = false, bool32 getVersion = false);
-bool32 LoadMod(ModInfo *info, const std::string& modsPath, const std::string& folder, bool32 active, bool32 getVersion);
+bool32 LoadMod(ModInfo *info, const std::string &modsPath, const std::string &folder, bool32 active, bool32 getVersion);
 void SaveMods();
 void SortMods();
 void LoadModSettings();

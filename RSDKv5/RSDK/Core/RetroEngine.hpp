@@ -78,6 +78,11 @@ enum GameRegions {
 #define RETRO_STANDALONE (1)
 #endif
 
+// awesome
+#ifndef DO_AWESOME_THINGS
+#define DO_AWESOME_THINGS (1)
+#endif
+
 // ============================
 // PLATFORMS
 // ============================
