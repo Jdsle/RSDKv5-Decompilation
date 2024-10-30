@@ -1331,7 +1331,7 @@ void RSDK::InitGameLink()
 #if RETRO_REV02
             linkGameLogic(&info);
 #else
-        linkGameLogic(info);
+            linkGameLogic(info);
 #endif
         }
 #if RETRO_USE_MOD_LOADER

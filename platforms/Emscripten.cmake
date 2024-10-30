@@ -48,24 +48,20 @@ target_link_libraries(RetroEngine libtheora)
 
 set(EMSCRIPTEN_FLAGS
     -sUSE_SDL=2
-    -sUSE_SDL_IMAGE=1
     -sUSE_OGG=1
     -sUSE_VORBIS=1
     -sUSE_PTHREADS=1
     -DRSDK_REVISION=3
     -DRSDK_USE_SDL2=1
-    -DRETRO_AUDIODEVICE_SDL2=1
     -DRETRO_STANDALONE=1
     -DRETRO_USE_MOD_LOADER=1
     -DRETRO_PLATFORM=5
-    -O3
 )
 
 set(emsc_link_options
     -sTOTAL_MEMORY=128MB
     -sALLOW_MEMORY_GROWTH=1
     -sUSE_SDL=2
-    -sUSE_SDL_IMAGE=1
     -sUSE_OGG=1
     -sUSE_VORBIS=1
     -sFORCE_FILESYSTEM=1
@@ -73,14 +69,11 @@ set(emsc_link_options
     -sUSE_PTHREADS=1
     -sPTHREAD_POOL_SIZE=4
     -DRSDK_REVISION=3
-    -DRETRO_USERCORE_DUMMY=1
     -lm
     -lidbfs.js
     -flto
     -pthread
-    -matomics
     -g
-    -mbulk-memory
     -Wl,--whole-archive
     ${THEORA_LIB}
     -Wl,--no-whole-archive
