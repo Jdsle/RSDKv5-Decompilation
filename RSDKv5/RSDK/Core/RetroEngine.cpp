@@ -22,96 +22,101 @@ void (*RSDK::globalVarsInitCB)(void *globals) = NULL;
 
 RetroEngine RSDK::engine = RetroEngine();
 
+bool32 r_init = false;
+
 int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
 {
     ParseArguments(argc, argv);
 
-    if (engine.consoleEnabled)
-        InitConsole();
-    RenderDevice::isRunning = false;
+    if (!r_init) {
+        if (engine.consoleEnabled)
+            InitConsole();
+        RenderDevice::isRunning = false;
 
-    if (InitStorage()) {
-        SKU::InitUserCore();
-        LoadSettingsINI();
+        if (InitStorage()) {
+            SKU::InitUserCore();
+            LoadSettingsINI();
 
 #if !RETRO_USE_ORIGINAL_CODE
-        // temp fix till i properly figure out what exactly went wrong here
+            // temp fix till i properly figure out what exactly went wrong here
 #if RETRO_REV02
-        SKU::curSKU.platform = SKU::userCore->GetUserPlatform();
+            SKU::curSKU.platform = SKU::userCore->GetUserPlatform();
 #else
-        if (gameVerInfo.platform == PLATFORM_PC)
-            gameVerInfo.platform = engine.devMenu ? PLATFORM_DEV : PLATFORM_PC;
+            if (gameVerInfo.platform == PLATFORM_PC)
+                gameVerInfo.platform = engine.devMenu ? PLATFORM_DEV : PLATFORM_PC;
 #endif
 #endif
 
 #if RETRO_USE_MOD_LOADER
-        // do it early so we can render funny little loading bar for mods
-        int32 shader = videoSettings.shaderID;
-        strcpy(gameVerInfo.gameTitle, "RSDK" ENGINE_V_NAME);
-        if (RenderDevice::Init()) {
-            RenderDevice::isRunning   = true;
-            currentScreen             = &screens[0];
-            videoSettings.screenCount = 1;
-        }
-        else {
-            // No render device, throw a "QUIT" msg onto the message loop and call it a day :)
-            SendQuitMsg();
-        }
+            // do it early so we can render funny little loading bar for mods
+            int32 shader = videoSettings.shaderID;
+            strcpy(gameVerInfo.gameTitle, "RSDK" ENGINE_V_NAME);
+            if (RenderDevice::Init()) {
+                RenderDevice::isRunning   = true;
+                currentScreen             = &screens[0];
+                videoSettings.screenCount = 1;
+            }
+            else {
+                // No render device, throw a "QUIT" msg onto the message loop and call it a day :)
+                SendQuitMsg();
+            }
 #if RETRO_PLATFORM == RETRO_ANDROID
-        // wait until we have a window
-        while (!RenderDevice::window) {
-            RenderDevice::ProcessEvents();
-        }
+            // wait until we have a window
+            while (!RenderDevice::window) {
+                RenderDevice::ProcessEvents();
+            }
 #endif
 
 #if RETRO_REV0U
-        engine.version = 0;
-        InitModAPI(true); // check for versions
-        engine.version = 5;
+            engine.version = 0;
+            InitModAPI(true); // check for versions
+            engine.version = 5;
 #endif
 #endif
 
 #if RETRO_REV0U
-        DetectEngineVersion();
+            DetectEngineVersion();
 #endif
 
-        // By Default we use the dummy system so this'll never be false
-        // its used in cases like steam where it gives the "Steam must be running to play this game" message and closes
+            // By Default we use the dummy system so this'll never be false
+            // its used in cases like steam where it gives the "Steam must be running to play this game" message and closes
 #if RETRO_REV02
-        if (!SKU::userCore->CheckAPIInitialized()) {
+            if (!SKU::userCore->CheckAPIInitialized()) {
 #else
-        if (false) { // it's more hardcoded in rev01, so lets pretend it's here
+            if (false) { // it's more hardcoded in rev01, so lets pretend it's here
 #endif
-            // popup a message box saying the API failed to validate or something
-            // on steam this is the "steam must be running to play this game" message
-            return 0;
-        }
+                // popup a message box saying the API failed to validate or something
+                // on steam this is the "steam must be running to play this game" message
+                return 0;
+            }
 
-        InitEngine();
+            InitEngine();
 #if RETRO_USE_MOD_LOADER
-        // we confirmed the game actually is valid & running, lets start some callbacks
-        videoSettings.shaderID = shader;
-        RenderDevice::InitShaders();
-        RenderDevice::SetWindowTitle();
-        RenderDevice::lastShaderID = -1;
+            // we confirmed the game actually is valid & running, lets start some callbacks
+            videoSettings.shaderID = shader;
+            RenderDevice::InitShaders();
+            RenderDevice::SetWindowTitle();
+            RenderDevice::lastShaderID = -1;
 #else
-        if (RenderDevice::Init()) {
-            RenderDevice::isRunning = true;
-        }
-        else {
-            // No render device, throw a "QUIT" msg onto the message loop and call it a day :)
-            SendQuitMsg();
-        }
+            if (RenderDevice::Init()) {
+                RenderDevice::isRunning = true;
+            }
+            else {
+                // No render device, throw a "QUIT" msg onto the message loop and call it a day :)
+                SendQuitMsg();
+            }
 #endif
+        }
+        r_init = true;
     }
 
     RenderDevice::InitFPSCap();
 
-    while (RenderDevice::isRunning) {
+    if (RenderDevice::isRunning) {
         RenderDevice::ProcessEvents();
 
         if (!RenderDevice::isRunning)
-            break;
+            return 0;
 
         if (RenderDevice::CheckFPSCap()) {
             RenderDevice::UpdateFPSCap();
@@ -122,7 +127,7 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
             SKU::userCore->FrameInit();
 
             if (SKU::userCore->CheckEnginePause())
-                continue;
+                return 0;
 
                 // Focus Checks
 #if !RETRO_USE_ORIGINAL_CODE
@@ -165,7 +170,7 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
 
             if (!engine.initialized || (engine.focusState & 1)) {
                 if (videoSettings.windowState != WINDOWSTATE_ACTIVE)
-                    continue;
+                    return 1;
             }
             else {
                 if (!engine.hardPause) {
@@ -278,7 +283,7 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
 #endif
 
                 if (videoSettings.windowState != WINDOWSTATE_ACTIVE)
-                    continue;
+                    return 0;
 
 #if !RETRO_USE_ORIGINAL_CODE
                 for (int32 t = 0; t < touchInfo.count; ++t) {
@@ -319,27 +324,31 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
 
             RenderDevice::FlipScreen();
         }
+
+        return 0;
     }
-
-    // Shutdown
-
-    ReleaseInputDevices();
-    AudioDevice::Release();
-    RenderDevice::Release(false);
-    SaveSettingsINI(false);
-    SKU::ReleaseUserCore();
-    ReleaseStorage();
+    else {
+        // Shutdown
+        ReleaseInputDevices();
+        AudioDevice::Release();
+        RenderDevice::Release(false);
+        SaveSettingsINI(false);
+        SKU::ReleaseUserCore();
+        ReleaseStorage();
 #if RETRO_USE_MOD_LOADER
-    UnloadMods();
+        UnloadMods();
 #endif
 
-    Link::Close(gameLogicHandle);
-    gameLogicHandle = NULL;
+        Link::Close(gameLogicHandle);
+        gameLogicHandle = NULL;
 
-    if (engine.consoleEnabled)
-        ReleaseConsole();
+        if (engine.consoleEnabled)
+            ReleaseConsole();
 
-    return 0;
+        return 0;
+    }
+
+    return 1;
 }
 
 void RSDK::ProcessEngine()
@@ -1282,11 +1291,8 @@ void RSDK::InitGameLink()
 #endif
         if (engine.useExternalCode) {
             char buffer[0x100];
-#if RETRO_PLATFORM == RETRO_WIN
-            strcpy_s(buffer, 0x100, gameLogicName);
-#else
-        sprintf(buffer, "%s%s", SKU::userFileDir, gameLogicName);
-#endif
+            sprintf(buffer, "%s%s", SKU::userFileDir, gameLogicName);
+
             if (!gameLogicHandle)
                 gameLogicHandle = Link::Open(buffer);
 
@@ -1306,7 +1312,7 @@ void RSDK::InitGameLink()
 #if RETRO_REV02
                     linkGameLogic(&info);
 #else
-                linkGameLogic(info);
+                    linkGameLogic(info);
 #endif
                     linked = true;
                 }
@@ -1495,25 +1501,8 @@ void RSDK::ReleaseCoreAPI()
 #endif
 }
 
-void RSDK::InitConsole()
-{
-#if RETRO_PLATFORM == RETRO_WIN
-    AllocConsole();
-    AttachConsole(GetCurrentProcessId());
-
-    freopen("CON", "w", stdout);
-#endif
-
-#if RETRO_PLATFORM == RETRO_SWITCH
-    consoleInit(NULL);
-#endif
-}
-void RSDK::ReleaseConsole()
-{
-#if RETRO_PLATFORM == RETRO_WIN
-    FreeConsole();
-#endif
-}
+void RSDK::InitConsole() {}
+void RSDK::ReleaseConsole() {}
 
 void RSDK::SendQuitMsg()
 {

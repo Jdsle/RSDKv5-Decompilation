@@ -9,6 +9,24 @@
 #define LinkGameLogic LinkGameLogicDLL
 #endif
 
+#ifdef __EMSCRIPTEN__
+static bool looped = false;
+
+void LoopRSDK() { RSDK::RunRetroEngine(0, 0); }
+extern "C" {
+EMSCRIPTEN_KEEPALIVE void RSDK_Initialize() {
+    if (!looped) {
+        RSDK_main(0, 0, (void *)LinkGameLogic);
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE void RSDK_Configure(int value, int index) {
+    // Engine.plusEnabled = value;
+}
+}
+
+int main() { return 0; }
+#else
 #if RETRO_PLATFORM == RETRO_WIN && !RETRO_RENDERDEVICE_SDL2
 
 #if RETRO_RENDERDEVICE_DIRECTX9 || RETRO_RENDERDEVICE_DIRECTX11
@@ -77,6 +95,7 @@ void android_main(struct android_app *ap)
 #else
 int32 main(int32 argc, char *argv[]) { return RSDK_main(argc, argv, (void *)LinkGameLogic); }
 #endif
+#endif
 
 int32 RSDK_main(int32 argc, char **argv, void *linkLogicPtr)
 {
@@ -84,9 +103,20 @@ int32 RSDK_main(int32 argc, char **argv, void *linkLogicPtr)
 
     RSDK::InitCoreAPI();
 
+#ifdef __EMSCRIPTEN__
+    if (!looped) {
+        looped = true;
+        emscripten_set_main_loop(LoopRSDK, false, true);
+    }
+#else
     int32 exitCode = RSDK::RunRetroEngine(argc, argv);
+#endif
 
     RSDK::ReleaseCoreAPI();
 
+#ifdef __EMSCRIPTEN__
+    return false;
+#else
     return exitCode;
+#endif
 }

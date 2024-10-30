@@ -396,10 +396,7 @@ void LinkGameLogic(EngineInfo info);
 
 // ORIGINAL CLASS
 
-// Windows.h already included by master header
-#if !(RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_SWITCH)
 #include <dlfcn.h>
-#endif
 
 // Only define this if you want to prioritize checking libraries first (Game_x64.dll then Game.dll)
 // e.x. -DRETRO_ARCHIITECTURE="x64"
@@ -410,60 +407,14 @@ void LinkGameLogic(EngineInfo info);
 class Link
 {
 public:
-#if RETRO_PLATFORM == RETRO_WIN
-    typedef HMODULE Handle;
-    // constexpr was added in C++11 this is safe don't kill me
-    static constexpr const char *extention = ".dll";
-    static constexpr const char *prefix    = NULL;
-#elif RETRO_PLATFORM == RETRO_SWITCH
-    typedef DynModule *Handle;
-    static constexpr const char *extention = ".elf";
-    static constexpr const char *prefix    = NULL;
-
-    static Handle dlopen(const char *, int);
-    static void *dlsym(Handle, const char *);
-    static int dlclose(Handle);
-    static char *dlerror();
-
-    static constexpr const int RTLD_LOCAL = 0;
-    static constexpr const int RTLD_LAZY  = 0;
-
-private:
-    static Result err;
-
-public:
-#else
     typedef void *Handle;
-    static constexpr const char *prefix    = "lib";
-#if RETRO_PLATFORM == RETRO_OSX
-    static constexpr const char *extention = ".dylib";
-#else
-    static constexpr const char *extention = ".so";
-#endif
-#endif
+    static constexpr const char *extention = ".wasm";
+    static constexpr const char *prefix    = NULL;
 
     static inline Handle PlatformLoadLibrary(std::string path)
     {
         Handle ret;
-#if RETRO_PLATFORM == RETRO_WIN
-        ret = (Handle)LoadLibraryA(path.c_str());
-#else
-#if RETRO_PLATFORM == RETRO_ANDROID
-        // path should only load local libs
-        if (path.find_last_of('/') != std::string::npos)
-            path = path.substr(path.find_last_of('/') + 1);
-        path = "lib" + path;
-#endif // ! RETRO_PLATFORM == ANDROID
-        ret  = (Handle)dlopen(path.c_str(), RTLD_LOCAL | RTLD_LAZY);
-#if RETRO_PLATFORM != RETRO_SWITCH
-        // try loading the library globally on linux
-        if (!ret) {
-            if (path.find_last_of('/') != std::string::npos)
-                path = path.substr(path.find_last_of('/') + 1);
-            ret = (Handle)dlopen(path.c_str(), RTLD_LOCAL | RTLD_LAZY);
-        }
-#endif // ! RETRO_PLATFORM != SWITCH
-#endif // ! RETRO_PLATFORM == WIN
+        ret = dlopen(path.c_str(), RTLD_LOCAL | RTLD_LAZY);
         return ret;
     }
 
@@ -471,113 +422,46 @@ public:
     {
         std::string original_path = path;
 
-        // if it ends with extension
         if (path.length() >= strlen(extention) && 0 == path.compare(path.length() - strlen(extention), strlen(extention), extention)) {
-            // remove it!
             path = path.substr(0, path.size() - strlen(extention));
         }
 
-#if RETRO_ARCHITECTURE
-        path += "_" RETRO_ARCHITECTURE;
-#endif // ! RETRO_ARCHITECTURE
-
-        // put it again!
         path += extention;
 
-        Handle ret = NULL;
+        Handle ret = nullptr;
         if (prefix) {
-            int32 last = (int32)path.find_last_of('/') + 1;
-            if (last == std::string::npos + 1)
+            int32_t last = static_cast<int32_t>(path.find_last_of('/')) + 1;
+            if (last == std::string::npos + 1) {
                 ret = PlatformLoadLibrary(prefix + path);
-            else
-                ret = PlatformLoadLibrary(path.substr(0, last) + prefix + path.substr(last));
-        }
-        if (!ret)
-            ret = PlatformLoadLibrary(path);
-
-#if RETRO_ARCHITECTURE
-        if (!ret) {
-            if (prefix) {
-                int32 last = original_path.find_last_of('/') + 1;
-                if (last == std::string::npos + 1)
-                    ret = PlatformLoadLibrary(prefix + original_path);
-                else
-                    ret = PlatformLoadLibrary(original_path.substr(0, last) + prefix + original_path.substr(last));
             }
-            if (!ret)
-                ret = PlatformLoadLibrary(original_path);
+            else {
+                ret = PlatformLoadLibrary(path.substr(0, last) + prefix + path.substr(last));
+            }
         }
-#endif // ! RETRO_ARCHITECTURE
+        if (!ret) {
+            ret = PlatformLoadLibrary(path);
+        }
+
         return ret;
     }
 
     static inline void Close(Handle handle)
     {
-        if (handle)
-#if RETRO_PLATFORM == RETRO_WIN
-            FreeLibrary(handle);
-#else
+        if (handle) {
             dlclose(handle);
-#endif
+        }
     }
 
     static inline void *GetSymbol(Handle handle, const char *symbol)
     {
-        if (!handle)
-            return NULL;
-#if RETRO_PLATFORM == RETRO_WIN
-        return (void *)GetProcAddress(handle, symbol);
-#else
-        return (void *)dlsym(handle, symbol);
-#endif
-    }
-
-    static inline char *GetError()
-    {
-#if RETRO_PLATFORM == RETRO_WIN
-        return (char *)GetLastErrorAsString();
-#else
-        return dlerror();
-#endif
-    }
-
-private:
-#if RETRO_PLATFORM == RETRO_WIN
-#if _MSC_VER
-    // from here: https://stackoverflow.com/a/17387176
-    // WINAPI sucks lol
-    // Returns the last Win32 error, in string format. Returns an empty string if there is no error.
-    static inline char *GetLastErrorAsString()
-    {
-        // Get the error message ID, if any.
-        DWORD errorMessageID = ::GetLastError();
-        if (errorMessageID == 0) {
-            return (char *)""; // No error message has been recorded
+        if (!handle) {
+            return nullptr;
         }
-
-        LPSTR messageBuffer = nullptr;
-
-        // Ask Win32 to give us the string version of that message ID.
-        // The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message
-        // string will be).
-        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-                                     errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
-
-        // Copy the error message into a std::string.
-        std::string message(messageBuffer, size);
-
-        // Free the Win32's string's buffer.
-        LocalFree(messageBuffer);
-
-        strcpy(textBuffer, message.c_str());
-        return textBuffer;
+        return dlsym(handle, symbol);
     }
-#else
-    static inline char *GetLastErrorAsString() { return (char *)""; }
-#endif
-#endif
-};
 
+    static inline char *GetError() { return dlerror(); }
+};
 } // namespace RSDK
 
 #endif

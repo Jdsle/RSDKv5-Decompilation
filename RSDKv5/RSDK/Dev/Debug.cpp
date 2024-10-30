@@ -1,10 +1,5 @@
 #include "RSDK/Core/RetroEngine.hpp"
 
-#if RETRO_PLATFORM == RETRO_WIN
-#include <Windows.h>
-
-#undef PRINT_ERROR // causes conflicts
-#endif
 #if RETRO_PLATFORM == RETRO_ANDROID
 #include <android/log.h>
 #include <locale>
@@ -80,26 +75,7 @@ void RSDK::PrintLog(int32 mode, const char *message, ...)
             PrintConsole(outputString);
         }
         else {
-#if RETRO_PLATFORM == RETRO_WIN
-            OutputDebugStringA(outputString);
-#elif RETRO_PLATFORM == RETRO_ANDROID
-            int32 as = ANDROID_LOG_INFO;
-            switch (mode) {
-#if RETRO_REV0U
-                case PRINT_SCRIPTERR:
-#endif
-                case PRINT_ERROR: as = ANDROID_LOG_ERROR; break;
-                case PRINT_FATAL: as = ANDROID_LOG_FATAL; break;
-                default: break;
-            }
-            auto *jni        = GetJNISetup();
-            int len          = strlen(outputString);
-            jbyteArray array = jni->env->NewByteArray(len); // as per research, this gets freed automatically
-            jni->env->SetByteArrayRegion(array, 0, len, (jbyte *)outputString);
-            jni->env->CallVoidMethod(jni->thiz, writeLog, array, as);
-#elif RETRO_PLATFORM == RETRO_SWITCH
             printf("%s", outputString);
-#endif
         }
 
 #if !RETRO_USE_ORIGINAL_CODE && RETRO_PLATFORM != RETRO_ANDROID

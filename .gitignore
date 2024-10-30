@@ -29,6 +29,10 @@ bin/
 [Oo]bj/
 cmake/
 
+#dependencies
+[Dd]ependencies/all/*
+[Dd]ependencies/all/libtheora/
+
 # Safety
 *.rsdk
 Sonic Mania/Static/*

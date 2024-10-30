@@ -8,6 +8,9 @@
 #include <string.h>
 #include <cmath>
 #include <ctime>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 // ================
 // STANDARD TYPES
@@ -417,8 +420,8 @@ enum GameRegions {
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP
 
 // All windows systems need windows API for LoadLibrary()
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+// #define WIN32_LEAN_AND_MEAN
+// #include <windows.h>
 
 #if RETRO_AUDIODEVICE_XAUDIO
 #include <XAudio2.h>
