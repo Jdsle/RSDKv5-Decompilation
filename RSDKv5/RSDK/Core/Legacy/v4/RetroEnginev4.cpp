@@ -175,7 +175,12 @@ bool32 RSDK::Legacy::v4::LoadGameConfig(const char *filepath)
         SetGlobalVariableByName("engine.standalone", 0);
 #endif
 
+#ifdef __EMSCRIPTEN__
+        // disabled by default, can be enabled via settings
+        SetGlobalVariableByName("game.hasPlusDLC", engine.plusEnabled ? 1 : 0);
+#else
         SetGlobalVariableByName("game.hasPlusDLC", !RSDK_AUTOBUILD);
+#endif
 
         usingBytecode = false;
         InitFileInfo(&info);

@@ -92,12 +92,12 @@ void DummyCore::StageLoad()
 {
     UserCore::StageLoad();
 
-#if !RSDK_AUTOBUILD
-    for (int32 v = 0; v < valueCount; ++v) AddViewableVariable(userValueNames[v], &values[v], VIEWVAR_BOOL, false, true);
-#else
-    // disable plus on autobuilds
-    for (int32 v = 0; v < valueCount; ++v) values[v] = false;
-#endif
+    if (RSDK::engine.plusEnabled) {
+        for (int32 v = 0; v < valueCount; ++v) AddViewableVariable(userValueNames[v], &values[v], VIEWVAR_BOOL, false, true);
+    }
+    else {
+        for (int32 v = 0; v < valueCount; ++v) values[v] = false;
+    }
 }
 
 bool32 DummyCore::CheckFocusLost() { return focusState != 0; }

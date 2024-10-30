@@ -169,7 +169,12 @@ bool32 RSDK::Legacy::v3::LoadGameConfig(const char *filepath)
         v3::LoadGameXML();
         SetGlobalVariableByName("Options.DevMenuFlag", engine.devMenu ? 1 : 0);
         SetGlobalVariableByName("Engine.Standalone", 0);
+#ifdef __EMSCRIPTEN__
+        // disabled by default, can be enabled via settings
+        SetGlobalVariableByName("game.hasPlusDLC", engine.plusEnabled ? 1 : 0);
+#else
         SetGlobalVariableByName("game.hasPlusDLC", !RSDK_AUTOBUILD);
+#endif
 #endif
 
         SetGlobalVariableByName("Engine.PlatformId", gamePlatformID);

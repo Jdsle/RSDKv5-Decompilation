@@ -21,7 +21,7 @@ EMSCRIPTEN_KEEPALIVE void RSDK_Initialize() {
 }
 
 EMSCRIPTEN_KEEPALIVE void RSDK_Configure(int value, int index) {
-    // Engine.plusEnabled = value;
+    RSDK::engine.plusEnabled = value;
 }
 }
 

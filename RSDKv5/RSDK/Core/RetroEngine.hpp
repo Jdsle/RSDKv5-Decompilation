@@ -643,6 +643,10 @@ struct RetroEngine {
     bool32 streamsEnabled = true;
     float streamVolume    = 1.0f;
     float soundFXVolume   = 1.0f;
+
+#ifdef __EMSCRIPTEN__
+    int plusEnabled = 0;
+#endif
 };
 
 extern RetroEngine engine;
