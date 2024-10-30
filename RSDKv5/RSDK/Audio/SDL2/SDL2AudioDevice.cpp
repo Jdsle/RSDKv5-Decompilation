@@ -15,7 +15,8 @@ bool32 AudioDevice::Init()
     SDL_AudioSpec want;
     want.freq     = AUDIO_FREQUENCY;
     want.format   = AUDIO_F32SYS;
-    want.samples  = MIX_BUFFER_SIZE / AUDIO_CHANNELS;
+    // dividing here makes the audio straight up haunted for some reason...
+    want.samples  = MIX_BUFFER_SIZE; // / AUDIO_CHANNELS;
     want.channels = AUDIO_CHANNELS;
     want.callback = AudioCallback;
 

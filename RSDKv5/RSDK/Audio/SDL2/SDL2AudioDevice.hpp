@@ -1,5 +1,7 @@
-#define LockAudioDevice() SDL_LockAudioDevice(AudioDevice::device)
+#define LockAudioDevice()   SDL_LockAudioDevice(AudioDevice::device)
 #define UnlockAudioDevice() SDL_UnlockAudioDevice(AudioDevice::device)
+
+#include <thread>
 
 namespace RSDK
 {
@@ -15,10 +17,16 @@ public:
 
     inline static void HandleStreamLoad(ChannelInfo *channel, bool32 async)
     {
-        if (async)
-            SDL_CreateThread((SDL_ThreadFunction)LoadStream, "LoadStream", (void *)channel);
-        else
+        if (async) {
+            // SDL_CreateThread((SDL_ThreadFunction)LoadStream, "LoadStream", (void *)channel);
+
+            // ... we don't talk about this
+            std::thread thread(LoadStream, channel);
+            thread.detach();
+        }
+        else {
             LoadStream(channel);
+        }
     }
 
 private:
