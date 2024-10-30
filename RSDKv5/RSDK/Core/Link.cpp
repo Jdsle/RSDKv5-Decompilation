@@ -161,8 +161,13 @@ void RSDK::SetupFunctionTables()
     ADD_API_FUNCTION(APITable_GetUserStorageNoSave, GetUserStorageNoSave);
 
     // User File Management
+#ifdef __EMSCRIPTEN__
+    ADD_API_FUNCTION(APITable_LoadUserFile, TryLoadUserFile_GameType);     // load user file from game dir
+    ADD_API_FUNCTION(APITable_SaveUserFile, TrySaveUserFile_GameType);     // save user file to game dir
+#else
     ADD_API_FUNCTION(APITable_LoadUserFile, TryLoadUserFile);     // load user file from game dir
     ADD_API_FUNCTION(APITable_SaveUserFile, TrySaveUserFile);     // save user file to game dir
+#endif
     ADD_API_FUNCTION(APITable_DeleteUserFile, TryDeleteUserFile); // delete user file from game dir
 
     // User DBs

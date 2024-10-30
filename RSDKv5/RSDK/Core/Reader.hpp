@@ -85,6 +85,12 @@ extern char gameLogicName[0x200];
 
 extern bool32 useDataPack;
 
+#ifdef __EMSCRIPTEN__
+extern bool32 syncingFS;
+extern "C"  void SyncFSCompleted(void* arg, int errorCode);
+void SyncFS();
+#endif
+
 #if RETRO_REV0U
 void DetectEngineVersion();
 #endif

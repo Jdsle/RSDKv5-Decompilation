@@ -12,6 +12,39 @@ char RSDK::gameLogicName[0x200];
 
 bool32 RSDK::useDataPack = false;
 
+#ifdef __EMSCRIPTEN__
+bool32 RSDK::syncingFS = false;
+
+extern "C"{
+EMSCRIPTEN_KEEPALIVE void RSDK::SyncFSCompleted(void* arg, int errorCode) {
+    (void)arg; // unused
+
+    syncingFS = false;
+    if (!errorCode) {
+        PrintLog(PRINT_NORMAL, "Synchronized FS\n");
+    } else {
+        PrintLog(PRINT_NORMAL, "RSDK::SyncFS: Sync failed: %d.\n", errorCode);
+    }
+}
+}
+void RSDK::SyncFS() {
+    if (syncingFS) {
+        PrintLog(PRINT_NORMAL, "RSDK::SyncFS Error: Sync already in progress\n");
+        return;
+    }
+    syncingFS = true;
+    EM_ASM(
+        FS.syncfs(false, function(err) {
+            if (err) {
+                ccall('SyncFSCompleted', null, ['number'], [err]);
+            } else {
+                ccall('SyncFSCompleted', null, ['number'], [0]);
+            }
+        });
+    );
+}
+#endif
+
 #if RETRO_REV0U
 void RSDK::DetectEngineVersion()
 {

@@ -234,17 +234,34 @@ extern UserDBStorage *userDBStorage;
 // USER STORAGE
 // =======================
 
+#ifdef __EMSCRIPTEN__
+inline void TryAuth() { userStorage->TryAuth(); }
+inline void TryInitStorage() { userStorage->TryInitStorage(); }
+#else
 inline int32 TryAuth() { return userStorage->TryAuth(); }
 inline int32 TryInitStorage() { return userStorage->TryInitStorage(); }
+#endif
 inline bool32 GetUsername(String *userName) { return userStorage->GetUsername(userName); }
 inline bool32 TryLoadUserFile(const char *filename, void *buffer, uint32 size, void (*callback)(int32 status))
 {
     return userStorage->TryLoadUserFile(filename, buffer, size, callback);
 }
+#ifdef __EMSCRIPTEN__
+inline void TryLoadUserFile_GameType(const char *filename, void *buffer, uint32 size, void (*callback)(int32 status))
+{
+    userStorage->TryLoadUserFile(filename, buffer, size, callback);
+}
+#endif
 inline bool32 TrySaveUserFile(const char *filename, void *buffer, uint32 size, void (*callback)(int32 status), bool32 compressed)
 {
     return userStorage->TrySaveUserFile(filename, buffer, size, callback, compressed);
 }
+#ifdef __EMSCRIPTEN__
+inline void TrySaveUserFile_GameType(const char *filename, void *buffer, uint32 size, void (*callback)(int32 status), bool32 compressed)
+{
+    userStorage->TrySaveUserFile(filename, buffer, size, callback, compressed);
+}
+#endif
 inline bool32 TryDeleteUserFile(const char *filename, void (*callback)(int32 status)) { return userStorage->TryDeleteUserFile(filename, callback); }
 inline void ClearPrerollErrors() { userStorage->ClearPrerollErrors(); }
 
