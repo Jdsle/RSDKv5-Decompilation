@@ -345,6 +345,11 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
         if (engine.consoleEnabled)
             ReleaseConsole();
 
+#ifdef __EMSCRIPTEN__
+        emscripten_cancel_main_loop();
+        EM_ASM_({ window.location.href = window.location.href.substring(0, window.location.href.lastIndexOf('/')); }); 
+#endif
+
         return 0;
     }
 

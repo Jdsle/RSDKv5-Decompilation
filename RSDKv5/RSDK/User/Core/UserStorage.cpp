@@ -1088,8 +1088,10 @@ bool32 RSDK::SKU::SaveUserFile(const char *filename, void *buffer, uint32 bufSiz
 
         if (postLoadSaveFileCB)
             postLoadSaveFileCB();
-
+            
+#ifdef __EMSCRIPTEN__
             RSDK::SyncFS();
+#endif
 
         return true;
     }

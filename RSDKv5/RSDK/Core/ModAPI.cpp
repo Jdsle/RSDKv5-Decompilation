@@ -898,6 +898,11 @@ bool32 RSDK::LoadMod(ModInfo *info, const std::string &modsPath, const std::stri
 
         iniparser_freedict(modIni);
         currentMod = cur;
+
+#ifdef __EMSCRIPTEN__
+        RSDK::SyncFS();
+#endif
+
         return true;
     }
     return false;
