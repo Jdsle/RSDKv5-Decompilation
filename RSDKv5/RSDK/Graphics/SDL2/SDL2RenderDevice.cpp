@@ -48,8 +48,8 @@ bool RenderDevice::Init()
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, videoSettings.vsync ? "1" : "0");
 
-    window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, videoSettings.windowWidth, videoSettings.windowHeight,
-                              SDL_WINDOW_ALLOW_HIGHDPI | flags);
+    window =
+        SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, videoSettings.windowWidth, videoSettings.windowHeight, flags);
 
     if (!window) {
         PrintLog(PRINT_NORMAL, "ERROR: failed to create window!");
@@ -862,8 +862,8 @@ void RenderDevice::ProcessEvent(SDL_Event event)
                     if (engine.devMenu) {
                         sceneInfo.listPos--;
                         while (sceneInfo.listPos < sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetStart
-                            || sceneInfo.listPos > sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetEnd
-                            || !sceneInfo.listCategory[sceneInfo.activeCategory].sceneCount) {
+                               || sceneInfo.listPos > sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetEnd
+                               || !sceneInfo.listCategory[sceneInfo.activeCategory].sceneCount) {
                             sceneInfo.activeCategory--;
                             if (sceneInfo.activeCategory >= sceneInfo.categoryCount) {
                                 sceneInfo.activeCategory = sceneInfo.categoryCount - 1;
@@ -888,8 +888,8 @@ void RenderDevice::ProcessEvent(SDL_Event event)
                     if (engine.devMenu) {
                         sceneInfo.listPos++;
                         while (sceneInfo.listPos < sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetStart
-                            || sceneInfo.listPos > sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetEnd
-                            || !sceneInfo.listCategory[sceneInfo.activeCategory].sceneCount) {
+                               || sceneInfo.listPos > sceneInfo.listCategory[sceneInfo.activeCategory].sceneOffsetEnd
+                               || !sceneInfo.listCategory[sceneInfo.activeCategory].sceneCount) {
                             sceneInfo.activeCategory++;
                             if (sceneInfo.activeCategory >= sceneInfo.categoryCount) {
                                 sceneInfo.activeCategory = 0;

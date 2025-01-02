@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 
 project(RetroEngine)
 
@@ -6,8 +6,11 @@ add_executable(RetroEngine ${RETRO_FILES})
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3")
-set(COMPILE_THEORA FALSE)
 
+# we're gonna handle libtheora here, because usually, COMPILE_THEORA directs
+# to the android dependencies, can't just set THEORA_DIR - because CMakeLists.txt
+# immediately changes it
+set(COMPILE_THEORA FALSE)
 set(THEORA_DIR dependencies/all/libtheora)
 
 add_library(libtheora STATIC
@@ -49,7 +52,6 @@ target_link_libraries(RetroEngine libtheora)
 set(EMSCRIPTEN_FLAGS
     -sUSE_SDL=2
     -sUSE_OGG=1
-    -sUSE_VORBIS=1
     -sUSE_PTHREADS=1
     -DRSDK_REVISION=3
     -DRSDK_USE_SDL2=1
@@ -63,7 +65,6 @@ set(emsc_link_options
     -sALLOW_MEMORY_GROWTH=1
     -sUSE_SDL=2
     -sUSE_OGG=1
-    -sUSE_VORBIS=1
     -sFORCE_FILESYSTEM=1
     -sMAIN_MODULE=1
     -sUSE_PTHREADS=1
@@ -73,7 +74,6 @@ set(emsc_link_options
     -lidbfs.js
     -flto
     -pthread
-    -g
     -Wl,--whole-archive
     ${THEORA_LIB}
     -Wl,--no-whole-archive
