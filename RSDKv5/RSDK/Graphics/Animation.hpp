@@ -36,14 +36,12 @@ typedef struct {
 
 static GameSpriteFrameType GameSpriteFrame;
 
-// hitboxCount & hitboxes are "private"
+// hitboxes are "private"
 // the proof of this is that "GetHitbox(animator, uint8 hitboxID)" exists, which means that Animator::frames must be a void*
 // otherwise you could just do animator->frames[x].hitboxes[y]
 // further proof of this is SVAR_SPRITEFRAME, to which the ONLY matching in the entire engine struct is "SpriteFrame" without the hitbox stuff.
 struct SpriteFrame : public GameSpriteFrameType {
     typedef decltype(GameSpriteFrame) frame;
-
-    uint8 hitboxCount;
     Hitbox hitboxes[FRAMEHITBOX_COUNT];
 };
 
