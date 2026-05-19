@@ -34,7 +34,7 @@ struct SceneListEntry {
     RETRO_HASH_MD5(hash);
     char name[0x20];
     char folder[0x10];
-    char id[0x08];
+    char id[0x04];
 #if RETRO_REV02
     uint8 filter;
 #endif
